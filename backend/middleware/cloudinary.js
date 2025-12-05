@@ -1,1 +1,0 @@
-import { cloudinary as v2 } from 'cloudinary '
