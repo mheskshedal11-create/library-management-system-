@@ -5,7 +5,7 @@ import { authValidation } from "../utils/validation.js";
 import uploadToCloudinary from "../utils/cloudinary.js";
 import bcrypt from 'bcrypt';
 import fs from 'fs';
-import path from 'path'
+import jwt from 'jsonwebtoken'
 
 export const registerController = async (req, res, next) => {
     try {
@@ -71,7 +71,15 @@ export const loginController = async (req, res, next) => {
         if (!hashPassword) {
             return next(new ErrorHandler('Invalid Password', 400))
         }
-        new (SuccessHandler(res, 'Login Successfully', 201, { existingUser }))
+        const token = jwt.sign(
+            { id: existingUser._id },
+            process.env.JWT_SECRET,
+            { expiresIn: '1d' }
+        )
+        const user = existingUser.toObject();
+        delete user.password;
+
+        new (SuccessHandler(res, 'Login Successfully', 201, { user, token }))
     } catch (error) {
         console.log(error)
         next(error)
