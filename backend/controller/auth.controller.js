@@ -56,3 +56,24 @@ export const registerController = async (req, res, next) => {
         next(error);
     }
 };
+
+export const loginController = async (req, res, next) => {
+    try {
+        const { email, password } = req.body
+        if (!email || !password) {
+            return next(new ErrorHandler('Both Field Required...........!', 400))
+        }
+        const existingUser = await User.findOne({ email })
+        if (!existingUser) {
+            return next(new ErrorHandler('Invalid Email...', 400))
+        }
+        const hashPassword = await bcrypt.compare(password, existingUser.password)
+        if (!hashPassword) {
+            return next(new ErrorHandler('Invalid Password', 400))
+        }
+        new (SuccessHandler(res, 'Login Successfully', 201, { existingUser }))
+    } catch (error) {
+        console.log(error)
+        next(error)
+    }
+}
